@@ -1,0 +1,325 @@
+    Application.ScreenUpdating = False ' Turn off screen updating for speed
+
+
+
+    Sheets("Sheet1").Activate ' Activate a specific sheet
+
+
+
+    For Each cell In Range("A1:A10")
+
+        If cell.Value = "Target" Then
+
+            cell.Interior.Color = vbYellow
+
+        End If
+
+    Next cell
+
+
+
+    On Error GoTo ErrorHandler
+
+    ' Your code here
+
+    Exit Sub
+
+    ErrorHandler:
+
+        MsgBox "An error occurred: " & Err.Description
+
+
+
+    Dim userName As String
+
+    userName = InputBox("Enter your name:")
+
+    MsgBox "Hello, " & userName
+
+
+
+
+
+
+
+// Copy CSV to sheet
+
+Sub Get_data_from_CSV_File()
+
+
+
+Dim rs As Worksheet
+
+Dim fName As String
+
+
+
+Application.Calculation = xlCalculationManual
+
+Application.ScreenUpdating = False
+
+Application.EnableEvents = False
+
+Application.DisplayStatusBar = False
+
+
+
+Set rs = Worksheets("Import")
+
+
+
+fName = Application.GetOpenFilename("Text Files (*.csv), *.csv")
+
+If fName = "False" Then Exit Sub
+
+
+
+rs.Cells.ClearContents 'clear data on import sheet
+
+
+
+    Open fName For Input As #1
+
+    r = 1
+
+   
+
+    Do Until EOF(1)
+
+    Line Input #1, LineFromFile
+
+   
+
+    lineitems = Split(LineFromFile, ",")
+
+   
+
+    For c = 0 To UBound(lineitems)
+
+    rs.Cells(r, c + 1) = lineitems(c)
+
+    Next c
+
+   
+
+    r = r + 1
+
+    Loop
+
+   
+
+    Close #1
+
+   
+
+Application.Calculation = xlCalculationAutomatic
+
+Application.ScreenUpdating = True
+
+Application.EnableEvents = True
+
+Application.DisplayStatusBar = True
+
+MsgBox r & " Rows Imported"
+
+
+
+End Sub
+
+
+
+
+
+
+
+
+
+
+
+//Export CSV
+
+Option Explicit
+
+
+
+Public Sub ExportWorksheetAndSaveAsCSV()
+
+
+
+Dim wbkExport As Workbook
+
+Dim shtToExport As Worksheet
+
+
+
+Set shtToExport = ThisWorkbook.Worksheets("Sheet1")     'Sheet to export as CSV
+
+Set wbkExport = Application.Workbooks.Add
+
+shtToExport.Copy Before:=wbkExport.Worksheets(wbkExport.Worksheets.Count)
+
+Application.DisplayAlerts = False                       'Possibly overwrite without asking
+
+wbkExport.SaveAs Filename:="C:\tmp\test.csv", FileFormat:=xlCSV
+
+Application.DisplayAlerts = True
+
+wbkExport.Close SaveChanges:=False
+
+
+
+End Sub
+
+
+
+
+
+
+
+//Last Row Options
+
+    Dim lastRow As Long
+
+    lastRow = ActiveSheet.UsedRange.Rows.Count + ActiveSheet.UsedRange.Row - 1
+
+    ' This finds the last row within the entire used range of the active sheet.
+
+
+
+    Dim lastRow As Long
+
+    lastRow = Cells(Rows.Count, "A").End(xlUp).Row
+
+    ' This finds the last row in Column A
+
+
+
+    Dim lastRow As Long
+
+    lastRow = ActiveSheet.Cells.SpecialCells(xlCellTypeLastCell).Row
+
+    ' This finds the row of the absolute last cell used on the active sheet.
+
+
+
+
+
+
+
+
+
+
+
+//Http Download
+
+Option Explicit
+
+Public Sub Test()
+
+    Dim sUrl As String, sAuth As String, XMLHttpReq As MSXML2.ServerXMLHTTP60
+
+    sUrl = "https://api.ngs.nfl.com/tracking/game/play?gameKey=57444&playId=51"
+
+    sAuth = "NGS AKIAIX2CQ7IEOKPOTKDQ:uNniaOp4jH8jcK9i/EtQhurlilc="
+
+
+
+    With CreateObject("MSXML2.XMLHTTP")
+
+        .Open "GET", sUrl, False
+
+        .setRequestHeader "Authorization", sAuth
+
+        .send
+
+        WriteTextFile .responseText, "C:\Users\User\Desktop\info.txt"
+
+    End With
+
+End Sub
+
+
+
+Public Sub WriteTextFile(ByVal htmlResponse As String, ByVal fileName As String)
+
+    Dim fso As Object, f As Object
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    Set f = fso.CreateTextFile(fileName, True, True)
+
+    f.Write htmlResponse
+
+    f.Close
+
+End Sub
+
+
+
+
+
+///OR Second Option
+
+Dim baseURL, name As String
+
+baseURL = "https://api.nationalize.io"
+
+name = "/?name=" & <cell value with name>
+
+Dim status, response As String
+
+With CreateObject("MSXML2.XMLHTTP")
+
+    .Open "GET", baseURL & name, False
+
+    .setRequestHeader "Content-Type", "application/json"
+
+    .send
+
+    status = .status
+
+    response = .responseText
+
+End With
+
+
+
+'transform response text to JSON
+
+Dim JSON As Dictionary
+
+Set JSON = JsonConverter.ParseJson(response)
+
+Debug.Print (JsonConverter.ConvertToJson(JSON))
+
+{"name":"Jurgen","country":[{"country_id":"BE","probability":0.36084541872899245},{"country_id":"AL","probability":0.2482687644789702},{"country_id":"MT","probability":0.1952108073789147}]}
+
+
+
+'we can adresss each element in country list
+
+Range("A1") = JSON("country")(1)("country_id")  //BE
+
+'or we can paste all of them in a loop
+
+Dim iter As Long
+
+iter = 1
+
+Dim Value As Dictionary
+
+For Each Value In JSON("country")
+
+    Cells(4 + iter, 2) = Value("country_id")
+
+    Cells(4 + iter, 3) = Value("probability")
+
+    iter = iter + 1
+
+Next Value
+
+
+
+VBA JSON Github Repository
+
+https://github.com/VBA-tools/VBA-JSON
